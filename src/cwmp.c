@@ -42,7 +42,7 @@ struct event_code event_code_array[] = {
 	[EVENT_M_DOWNLOAD] = {"M Download", EVENT_MULTIPLE, EVENT_REMOVE_AFTER_TRANSFER_COMPLETE}
 };
 
-struct cwmp_internal *cwmp;
+struct cwmp_internal *cwmp; 
 
 static struct uloop_timeout inform_timer = { .cb = cwmp_do_inform };
 static struct uloop_timeout periodic_inform_timer = { .cb = cwmp_periodic_inform };
@@ -199,7 +199,7 @@ static inline int rpc_get_rpc_methods()
 	return error;
 }
 
-static inline int rpc_inform()
+static inline int rpc_inform(void)
 {
 	char *msg_in = NULL, *msg_out = NULL;
 	int error = 0, count = 0;
@@ -268,12 +268,18 @@ int cwmp_inform(void)
 {
 	mxml_node_t *node;
 	int method_id;
+        char serial[32] = "DOG";
+        int pid;
 
 	log_message(NAME, L_NOTICE, "start session\n");
+
+        
+        
 	if (http_client_init()) {
 		D("initializing http client failed\n");
 		goto error;
 	}
+#if 0
 	if (external_init()) {
 		D("external scripts initialization failed\n");
 		goto error;
@@ -283,12 +289,26 @@ int cwmp_inform(void)
 		log_message(NAME, L_NOTICE, "sending Inform failed\n");
 		goto error;
 	}
+#endif
+
+        if (duts_inform_build())
+        {
+                log_message(NAME, L_NOTICE, "QUYENLV | building Inform failed\n");
+                goto error;
+        }
+
+        duts_inform_send();        
+        
 	log_message(NAME, L_NOTICE, "receive InformResponse from the ACS\n");
 
 	cwmp_remove_event(EVENT_REMOVE_AFTER_INFORM, 0);
 	cwmp_clear_notifications();
 
+#if 0
 	do {
+                log_message(NAME, L_NOTICE, "QUYENLV %s-%d | Check for get_rpc_methods or backup transfer\n",
+                            __func__, __LINE__);
+                
 		while((node = backup_check_transfer_complete()) && !cwmp->hold_requests) {
 			if(rpc_transfer_complete(node, &method_id)) {
 				log_message(NAME, L_NOTICE, "sending TransferComplete failed\n");
@@ -317,11 +337,14 @@ int cwmp_inform(void)
 		}
 		cwmp->hold_requests = false;
 	} while (cwmp->get_rpc_methods || backup_check_transfer_complete());
-	
+#endif
+
 	http_client_exit();
 	xml_exit();
 	cwmp_handle_end_session();
+#if 0
 	external_exit();
+#endif
 	cwmp->retry_count = 0;
 	log_message(NAME, L_NOTICE, "end session success\n");
 	return 0;
@@ -330,7 +353,9 @@ error:
 	http_client_exit();
 	xml_exit();
 	cwmp_handle_end_session();
+#if 0        
 	external_exit();
+#endif
 	log_message(NAME, L_NOTICE, "end session failed\n");
 	cwmp_retry_session();
 
@@ -438,10 +463,12 @@ void cwmp_download_launch(struct uloop_timeout *timeout)
 	log_message(NAME, L_NOTICE, "start download url = %s, FileType = '%s', CommandKey = '%s'\n",
 			d->download_url, d->file_type, d->key);
 
+#if 0
 	if (external_init()) {
 		D("external scripts initialization failed\n");
 		return;
 	}
+#endif
 
 	start_time = mix_get_time();
 	external_action_download_execute(d->download_url, d->file_type, d->file_size, d->username, d->password);
@@ -451,7 +478,9 @@ void cwmp_download_launch(struct uloop_timeout *timeout)
 	cwmp->download_count--;
 	node = backup_add_transfer_complete(d->key, code, start_time, ++cwmp->method_id);
 	if(!node) {
+#if 0                
 		external_exit();
+#endif
 		cwmp_free_download(d);
 		return;
 	}
@@ -491,7 +520,9 @@ end_fault :
 out:
 	backup_update_complete_time_transfer_complete(node);
 	cwmp_add_inform_timer();
+#if 0        
 	external_exit();
+#endif
 	cwmp_free_download(d);
 	free(status);
 	free(fault);
@@ -737,3 +768,4 @@ long int cwmp_periodic_inform_time(void)
 
 	return  periodic_time;
 }
+                                                                                                                                                                                                                                                                                                                                                                               

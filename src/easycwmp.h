@@ -21,7 +21,7 @@
 #define ARRAY_AND_SIZE(x) (x), ARRAY_SIZE(x)
 #endif
 
-#define FREE(x) do { free(x); x = NULL; } while (0);
+#define FREE(x) do { if(NULL != x) free(x); x = NULL; } while (0);
 
 #ifdef DEBUG
 #define D(format, ...) fprintf(stderr, "%s(%d): " format, __func__, __LINE__, ## __VA_ARGS__)
@@ -29,7 +29,8 @@
 #define D(format, ...) no_debug(0, format, ## __VA_ARGS__)
 #endif
 
-#ifdef DEVEL
+/* FIXME */
+#ifndef DEVEL
 #define DD(format, ...) fprintf(stderr, "%s(%d):: " format, __func__, __LINE__, ## __VA_ARGS__)
 #define DDF(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
 #else

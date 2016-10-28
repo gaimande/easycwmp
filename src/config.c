@@ -19,6 +19,7 @@
 #include "backup.h" 
 #include "config.h"
 #include "log.h"
+#include "http.h"
 
 static bool first_run = true;
 static struct uci_context *uci_ctx;
@@ -290,8 +291,7 @@ void config_exit(void)
 }
 
 void config_load(void)
-{
-
+{        
 	uci_easycwmp = config_init_package("easycwmp");
 
 	if (!uci_easycwmp) goto error;
@@ -302,7 +302,7 @@ void config_load(void)
 	cwmp_periodic_inform_init();
 
 	first_run = false;
-	config_free_ctx();
+	config_free_ctx();        
 
 	cwmp_update_value_change();
 	return;
@@ -313,3 +313,21 @@ error:
 	exit(EXIT_FAILURE);
 }
 
+void config_duts(int num)
+{
+    int i;
+    struct curl_client *d;
+    extern struct list_head duts;
+
+    config->dut_cnt = num;
+    
+    for (i = 0; i < num; i++)
+    {
+        d = calloc(1, sizeof(struct curl_client));
+        if (!d) return -1;
+
+        d->idx = i + 1;
+
+        list_add_tail(&d->list, &duts);
+    }
+}

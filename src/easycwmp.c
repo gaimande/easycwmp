@@ -47,6 +47,7 @@ struct option long_opts[] = {
 	{"version", no_argument, NULL, 'v'},
 	{"boot", no_argument, NULL, 'b'},
 	{"getrpcmethod", no_argument, NULL, 'g'},
+        {"dutcount", required_argument, NULL, 'd'},
 	{NULL, 0, NULL, 0}
 };
 
@@ -56,6 +57,7 @@ static void print_help(void)
 	printf(" -f, --foreground        Run in the foreground\n");
 	printf(" -b, --boot              Run with \"1 BOOT\" event\n");
 	printf(" -g, --getrpcmethod      Run with \"2 PERIODIC\" event and with ACS GetRPCMethods\n");
+        printf(" -d, --dutcount          Specify the quantity of DUTs\n");
 	printf(" -h, --help              Display this help text\n");
 	printf(" -v, --version           Display the %s version\n", NAME);
 }
@@ -68,24 +70,32 @@ static void print_version(void)
 static void easycwmp_do_reload(struct uloop_timeout *timeout)
 {
 	log_message(NAME, L_NOTICE, "configuration reload\n");
+#if 0        
 	if (external_init()) {
 		D("external scripts initialization failed\n");
 		return;
 	}
+#endif        
 	config_load();
+#if 0
 	external_exit();
+#endif
 }
 
 static void easycwmp_do_notify(struct uloop_timeout *timeout)
 {
 	log_message(NAME, L_NOTICE, "checking if there is notify value change\n");
+#if 0        
 	if (external_init()) {
 		D("external scripts initialization failed\n");
 		return;
 	}
+#endif        
 	external_action_simple_execute("check_value_change", NULL, NULL);
 	external_action_handle(json_handle_check_parameter_value_change);
+#if 0        
 	external_exit();
+#endif
 }
 
 void easycwmp_reload(void)
@@ -238,12 +248,12 @@ static int netlink_init(void)
 
 int main (int argc, char **argv)
 {
-	int c;
+	int c, dut_cnt;
 	int start_event = 0;
 	bool foreground = false;
 
 	while (1) {
-		c = getopt_long(argc, argv, "fhbgv", long_opts, NULL);
+		c = getopt_long(argc, argv, "fhbgvd:", long_opts, NULL);
 		if (c == EOF)
 			break;
 		switch (c) {
@@ -256,17 +266,24 @@ int main (int argc, char **argv)
 			case 'g':
 				start_event |= START_GET_RPC_METHOD;
 				break;
+
+                        case 'd':
+                                dut_cnt = atoi(optarg);
+                                break;
+                                
 			case 'h':
 				print_help();
 				exit(EXIT_SUCCESS);
 			case 'v':
 				print_version();
-				exit(EXIT_SUCCESS);
+				exit(EXIT_SUCCESS);                        
+                                
 			default:
 				print_help();
 				exit(EXIT_FAILURE);
 		}
 	}
+        
 	int fd = open("/var/run/easycwmp.pid", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if(fd == -1)
 		exit(EXIT_FAILURE);
@@ -290,18 +307,24 @@ int main (int argc, char **argv)
 	INIT_LIST_HEAD(&cwmp->notifications);
 	INIT_LIST_HEAD(&cwmp->downloads);
 	INIT_LIST_HEAD(&cwmp->scheduled_informs);
+        
+        extern struct list_head duts;
+        INIT_LIST_HEAD(&duts);
+        
 	uloop_init();
 	backup_init();
 	if (external_init()) {
 		D("external scripts initialization failed\n");
 		return -1;
 	}
+
 	config_load();
+
+        config_duts(dut_cnt);        
+        
 	log_message(NAME, L_NOTICE, "daemon started\n");
 	cwmp_init_deviceid();
-
-	external_exit();
-
+        
 	if (start_event & START_BOOT) {
 		cwmp_add_event(EVENT_BOOT, NULL, 0, EVENT_BACKUP);
 		cwmp_add_inform_timer();
@@ -361,6 +384,7 @@ int main (int argc, char **argv)
 	xml_exit();
 	config_exit();
 	cwmp_free_deviceid();
+        external_exit();
 	free(cwmp);
 
 	closelog();
@@ -372,3 +396,4 @@ int main (int argc, char **argv)
 	return 0;
 }
 
+                                         
