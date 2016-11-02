@@ -425,6 +425,7 @@ int duts_curl_setup (struct curl_client *nd)
     return 0;
 }
 
+#if 1
 int duts_inform_build (void)
 {    
     struct curl_client *nd, *pd;
@@ -450,7 +451,7 @@ int duts_inform_build (void)
         }
 
         duts_curl_setup (nd);
-        nd->inform_pending = 1;
+        nd->inform_pending = 0;
 
         curl_multi_add_handle(multi_handle, nd->curl);
 
@@ -463,6 +464,47 @@ int duts_inform_build (void)
 
     return 0;
 }
+#else
+int duts_inform_build (void)
+{
+    struct curl_client *nd, *pd;
+    int len;
+    char serial[32] = {0};
+    
+    /* init a multi stack */
+    multi_handle = curl_multi_init();
+
+    DDF("\n\n----------------------------\n");
+
+    list_for_each_entry_safe(nd, pd, &duts, list)
+    {
+        memset (serial, 0x0, sizeof(serial));
+        snprintf (serial, sizeof(serial), DUT_SERIALNUM, nd->idx);
+
+        len = sizeof(char) * (strlen(CWMP_INFORM_HARD) + 2 * strlen(serial) - 3);
+
+        nd->msg_out = calloc(1, len);
+        if (NULL == nd->msg_out)
+        {
+            DDF ("[DUT %05d] Not enough memory.\n", nd->idx);
+            return -1;
+        }
+
+        snprintf (nd->msg_out, len, CWMP_INFORM_HARD, serial, serial);
+
+        duts_curl_setup (nd);
+        nd->inform_pending = 1;
+
+        curl_multi_add_handle(multi_handle, nd->curl);
+
+        DDF("\rBuilding inform for duts.. [%05d/%05d]", nd->idx, config->dut_cnt);
+    }
+
+    DDF("\nFinish building inform\n");
+
+    return 0;    
+}
+#endif
 
 int duts_inform_send(void)
 {
@@ -510,10 +552,10 @@ int duts_inform_send(void)
 
                         if (nd->msg_in)
                         {
-                            if (1 == nd->inform_pending &&
+                            if (0 == nd->inform_pending &&
                                 0 == xml_parse_inform_response_message(nd->msg_in))
                             {
-                                nd->inform_pending = 0;
+                                nd->inform_pending = 1;
                                 DDF("[DUT %05d] Receive inform response message\n", nd->idx);
                             }
 #if 0
@@ -608,13 +650,18 @@ int duts_inform_send(void)
                             nd->request_pending = 0;
                             DDF("[DUT %05d] Finish TR-069 session\n", nd->idx);
                         }
-#if 0                        
+                        else if (1 == nd->inform_pending)
+                        {
+                            success++;
+                            nd->inform_pending = 0;
+                            DDF("[DUT %05d] Finish TR-069 periodically inform session\n", nd->idx);
+                        }
                         else
                         {
                             fail_cnt++;
                             DDF ("[DUT %05d] TR-069 session is failed\n", nd->idx);
                         }
-#endif
+
                         break;
                     }
                 }

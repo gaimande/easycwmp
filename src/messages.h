@@ -429,4 +429,78 @@
     "</soap_env:Body>"\
 "</soap_env:Envelope>"
 
+#define CWMP_INFORM_HARD \
+"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"\
+"<soap_env:Envelope "\
+"xmlns:soap_env=\"http://schemas.xmlsoap.org/soap/envelope/\" "\
+"xmlns:soap_enc=\"http://schemas.xmlsoap.org/soap/encoding/\" "\
+"xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "\
+"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "\
+"xmlns:cwmp=\"urn:dslforum-org:cwmp-1-2\">"\
+    "<soap_env:Header>"\
+        "<cwmp:ID soap_env:mustUnderstand=\"1\">1</cwmp:ID>"\
+    "</soap_env:Header>"\
+    "<soap_env:Body>"\
+        "<cwmp:Inform>"\
+            "<DeviceId>"\
+                "<Manufacturer>easycwmp</Manufacturer>"\
+                "<OUI>FFFFFF</OUI>"\
+                "<ProductClass>easycwmp</ProductClass>"\
+                "<SerialNumber>%s</SerialNumber>"\
+            "</DeviceId>"\
+            "<Event soap_enc:arrayType=\"cwmp:EventStruct[1]\">"\
+                "<EventStruct>"\
+                    "<EventCode>1 BOOT</EventCode>"\
+                    "<CommandKey />"\
+                "</EventStruct>"\
+            "</Event>"\
+            "<MaxEnvelopes>1</MaxEnvelopes>"\
+            "<CurrentTime>2016-11-01T16:21:16+07:00</CurrentTime>"\
+            "<RetryCount>0</RetryCount>"\
+            "<ParameterList soap_enc:arrayType=\"cwmp:ParameterValueStruct[10]\">"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.DeviceInfo.HardwareVersion</Name>"\
+                    "<Value xsi:type=\"xsd:string\">example_hw_version</Value>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.DeviceInfo.Manufacturer</Name>"\
+                    "<Value xsi:type=\"xsd:string\">easycwmp</Value>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.DeviceInfo.ManufacturerOUI</Name>"\
+                    "<Value xsi:type=\"xsd:string\">FFFFFF</Value>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.DeviceInfo.ProductClass</Name>"\
+                    "<Value xsi:type=\"xsd:string\">easycwmp</Value>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.DeviceInfo.ProvisioningCode</Name>"\
+                    "<Value xsi:type=\"xsd:string\"/>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.DeviceInfo.SerialNumber</Name>"\
+                    "<Value xsi:type=\"xsd:string\">%s</Value>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.DeviceInfo.SoftwareVersion</Name>"\
+                    "<Value xsi:type=\"xsd:string\">example_sw_version</Value>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.DeviceInfo.SpecVersion</Name>"\
+                    "<Value xsi:type=\"xsd:string\">1.0</Value>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.ManagementServer.ConnectionRequestURL</Name>"\
+                    "<Value xsi:type=\"xsd:string\">http://10.72.110.56:7547/</Value>"\
+                "</ParameterValueStruct>"\
+                "<ParameterValueStruct>"\
+                    "<Name>InternetGatewayDevice.ManagementServer.ParameterKey</Name>"\
+                    "<Value xsi:type=\"xsd:string\"/>"\
+                "</ParameterValueStruct>"\
+            "</ParameterList>"\
+        "</cwmp:Inform>"\
+    "</soap_env:Body>"\
+"</soap_env:Envelope>"
+
 #endif
