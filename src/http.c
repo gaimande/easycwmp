@@ -369,7 +369,7 @@ static int duts_replace_serialnumber (struct curl_client **nd, const char *msg_o
     char *serial_ptr = NULL;
     struct curl_client *dut = *nd;
     
-    snprintf (serial, sizeof(serial), DUT_SERIALNUM, dut->idx);
+    snprintf (serial, sizeof(serial), DUT_SERIALNUM, cwmp->deviceid.serial_number, dut->idx);
     
     dut->msg_out = strdup(msg_out);
     do
@@ -425,7 +425,7 @@ int duts_curl_setup (struct curl_client *nd)
     return 0;
 }
 
-#if 1
+#if 0
 int duts_inform_build (void)
 {    
     struct curl_client *nd, *pd;
@@ -467,9 +467,12 @@ int duts_inform_build (void)
 #else
 int duts_inform_build (void)
 {
+    struct list_head *p;
+    struct event *event;
     struct curl_client *nd, *pd;
     int len;
     char serial[32] = {0};
+    char *inform_msg;
     
     /* init a multi stack */
     multi_handle = curl_multi_init();
@@ -479,9 +482,30 @@ int duts_inform_build (void)
     list_for_each_entry_safe(nd, pd, &duts, list)
     {
         memset (serial, 0x0, sizeof(serial));
-        snprintf (serial, sizeof(serial), DUT_SERIALNUM, nd->idx);
+        snprintf (serial, sizeof(serial), DUT_SERIALNUM, cwmp->deviceid.serial_number, nd->idx);
 
-        len = sizeof(char) * (strlen(CWMP_INFORM_HARD) + 2 * strlen(serial) - 3);
+        inform_msg = NULL;
+        list_for_each(p, &cwmp->events)
+        {
+            event = list_entry (p, struct event, list);
+
+            if (event->code == EVENT_BOOTSTRAP || event->code == EVENT_BOOT)
+            {
+                inform_msg = CWMP_INFORM_BOOT_HARD;
+            }
+            else if (event->code == EVENT_PERIODIC)
+            {
+                inform_msg = CWMP_INFORM_PERIODIC_HARD;
+            }
+	}
+        
+        if (NULL == inform_msg)
+        {
+            DDF ("[DUT %05d] Cannot build inform message.\n", nd->idx);
+            return -1; 
+        }
+
+        len = sizeof(char) * (strlen(inform_msg) + 2 * strlen(serial) - 3);
 
         nd->msg_out = calloc(1, len);
         if (NULL == nd->msg_out)
@@ -490,10 +514,10 @@ int duts_inform_build (void)
             return -1;
         }
 
-        snprintf (nd->msg_out, len, CWMP_INFORM_HARD, serial, serial);
+        snprintf (nd->msg_out, len, inform_msg, serial, serial);
 
         duts_curl_setup (nd);
-        nd->inform_pending = 1;
+        nd->inform_pending = 0;
 
         curl_multi_add_handle(multi_handle, nd->curl);
 
@@ -612,7 +636,7 @@ int duts_inform_send(void)
                                 nd->request_pending = 1;
 
                                 memset (serial, 0x0, sizeof(serial));
-                                snprintf (serial, sizeof(serial), DUT_SERIALNUM, nd->idx);
+                                snprintf (serial, sizeof(serial), DUT_SERIALNUM, cwmp->deviceid.serial_number, nd->idx);
 
                                 len = sizeof(char) * (strlen(CWMP_GET_ALL_PARAMETER_VALUE) + strlen(nd->cwmp_id) + strlen(serial) - 3);
 

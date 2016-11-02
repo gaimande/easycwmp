@@ -43,7 +43,6 @@ void log_message(char *name, int priority, const char *format, ...)
 	va_list vl;
 
 	if (config && priority <= config->local->logging_level) {
-	//{
 #ifdef DEBUG
 		time_t t = time(NULL);
 		struct tm tm = *localtime(&t);

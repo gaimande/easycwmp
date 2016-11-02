@@ -302,7 +302,7 @@
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.HardwareVersion</Name>"\
-                    "<Value xsi:type=\"xsd:string\">1989</Value>"\
+                    "<Value xsi:type=\"xsd:string\">DS-E7-42U-A4</Value>"\
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.Manufacturer</Name>"\
@@ -334,7 +334,7 @@
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.SoftwareVersion</Name>"\
-                    "<Value xsi:type=\"xsd:string\">0406</Value>"\
+                    "<Value xsi:type=\"xsd:string\">ont.2.75.10860</Value>"\
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.SpecVersion</Name>"\
@@ -429,7 +429,82 @@
     "</soap_env:Body>"\
 "</soap_env:Envelope>"
 
-#define CWMP_INFORM_HARD \
+#define CWMP_INFORM_BOOT_HARD \
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"\
+        "<soap_env:Envelope "\
+        "xmlns:soap_env=\"http://schemas.xmlsoap.org/soap/envelope/\" "\
+        "xmlns:soap_enc=\"http://schemas.xmlsoap.org/soap/encoding/\" "\
+        "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "\
+        "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "\
+        "xmlns:cwmp=\"urn:dslforum-org:cwmp-1-2\">"\
+            "<soap_env:Header>"\
+                "<cwmp:ID soap_env:mustUnderstand=\"1\">1</cwmp:ID>"\
+            "</soap_env:Header>"\
+            "<soap_env:Body>"\
+                "<cwmp:Inform>"\
+                    "<DeviceId>"\
+                        "<Manufacturer>A</Manufacturer>"\
+                        "<OUI>B</OUI>"\
+                        "<ProductClass>C</ProductClass>"\
+                        "<SerialNumber>%s</SerialNumber>"\
+                    "</DeviceId>"\
+                    "<Event soap_enc:arrayType=\"cwmp:EventStruct[1]\">"\
+                        "<EventStruct>"\
+                            "<EventCode>1 BOOT</EventCode>"\
+                            "<CommandKey />"\
+                        "</EventStruct>"\
+                    "</Event>"\
+                    "<MaxEnvelopes>1</MaxEnvelopes>"\
+                    "<CurrentTime>2016-11-01T16:21:16+07:00</CurrentTime>"\
+                    "<RetryCount>0</RetryCount>"\
+                    "<ParameterList soap_enc:arrayType=\"cwmp:ParameterValueStruct[10]\">"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.DeviceInfo.HardwareVersion</Name>"\
+                            "<Value xsi:type=\"xsd:string\">DS-E7-42U-A4</Value>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.DeviceInfo.Manufacturer</Name>"\
+                            "<Value xsi:type=\"xsd:string\">A</Value>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.DeviceInfo.ManufacturerOUI</Name>"\
+                            "<Value xsi:type=\"xsd:string\">B</Value>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.DeviceInfo.ProductClass</Name>"\
+                            "<Value xsi:type=\"xsd:string\">C</Value>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.DeviceInfo.ProvisioningCode</Name>"\
+                            "<Value xsi:type=\"xsd:string\"/>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.DeviceInfo.SerialNumber</Name>"\
+                            "<Value xsi:type=\"xsd:string\">%s</Value>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.DeviceInfo.SoftwareVersion</Name>"\
+                            "<Value xsi:type=\"xsd:string\">ont.2.75.10860</Value>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.DeviceInfo.SpecVersion</Name>"\
+                            "<Value xsi:type=\"xsd:string\">1.0</Value>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.ManagementServer.ConnectionRequestURL</Name>"\
+                            "<Value xsi:type=\"xsd:string\">http://10.72.110.146:7547/</Value>"\
+                        "</ParameterValueStruct>"\
+                        "<ParameterValueStruct>"\
+                            "<Name>InternetGatewayDevice.ManagementServer.ParameterKey</Name>"\
+                            "<Value xsi:type=\"xsd:string\"/>"\
+                        "</ParameterValueStruct>"\
+                    "</ParameterList>"\
+                "</cwmp:Inform>"\
+            "</soap_env:Body>"\
+        "</soap_env:Envelope>"
+
+
+#define CWMP_INFORM_PERIODIC_HARD \
 "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"\
 "<soap_env:Envelope "\
 "xmlns:soap_env=\"http://schemas.xmlsoap.org/soap/envelope/\" "\
@@ -438,41 +513,41 @@
 "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "\
 "xmlns:cwmp=\"urn:dslforum-org:cwmp-1-2\">"\
     "<soap_env:Header>"\
-        "<cwmp:ID soap_env:mustUnderstand=\"1\">1</cwmp:ID>"\
+        "<cwmp:ID soap_env:mustUnderstand=\"1\">5</cwmp:ID>"\
     "</soap_env:Header>"\
     "<soap_env:Body>"\
         "<cwmp:Inform>"\
             "<DeviceId>"\
-                "<Manufacturer>easycwmp</Manufacturer>"\
-                "<OUI>FFFFFF</OUI>"\
-                "<ProductClass>easycwmp</ProductClass>"\
+                "<Manufacturer>A</Manufacturer>"\
+                "<OUI>B</OUI>"\
+                "<ProductClass>C</ProductClass>"\
                 "<SerialNumber>%s</SerialNumber>"\
             "</DeviceId>"\
             "<Event soap_enc:arrayType=\"cwmp:EventStruct[1]\">"\
                 "<EventStruct>"\
-                    "<EventCode>1 BOOT</EventCode>"\
+                    "<EventCode>2 PERIODIC</EventCode>"\
                     "<CommandKey />"\
                 "</EventStruct>"\
             "</Event>"\
             "<MaxEnvelopes>1</MaxEnvelopes>"\
-            "<CurrentTime>2016-11-01T16:21:16+07:00</CurrentTime>"\
+            "<CurrentTime>2016-11-02T14:21:52+07:00</CurrentTime>"\
             "<RetryCount>0</RetryCount>"\
             "<ParameterList soap_enc:arrayType=\"cwmp:ParameterValueStruct[10]\">"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.HardwareVersion</Name>"\
-                    "<Value xsi:type=\"xsd:string\">example_hw_version</Value>"\
+                    "<Value xsi:type=\"xsd:string\">DS-E7-42U-A4</Value>"\
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.Manufacturer</Name>"\
-                    "<Value xsi:type=\"xsd:string\">easycwmp</Value>"\
+                    "<Value xsi:type=\"xsd:string\">A</Value>"\
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.ManufacturerOUI</Name>"\
-                    "<Value xsi:type=\"xsd:string\">FFFFFF</Value>"\
+                    "<Value xsi:type=\"xsd:string\">B</Value>"\
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.ProductClass</Name>"\
-                    "<Value xsi:type=\"xsd:string\">easycwmp</Value>"\
+                    "<Value xsi:type=\"xsd:string\">C</Value>"\
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.ProvisioningCode</Name>"\
@@ -484,7 +559,7 @@
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.SoftwareVersion</Name>"\
-                    "<Value xsi:type=\"xsd:string\">example_sw_version</Value>"\
+                    "<Value xsi:type=\"xsd:string\">ont.2.75.10860</Value>"\
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.DeviceInfo.SpecVersion</Name>"\
@@ -492,7 +567,7 @@
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.ManagementServer.ConnectionRequestURL</Name>"\
-                    "<Value xsi:type=\"xsd:string\">http://10.72.110.56:7547/</Value>"\
+                    "<Value xsi:type=\"xsd:string\">http://10.72.110.146:7547/</Value>"\
                 "</ParameterValueStruct>"\
                 "<ParameterValueStruct>"\
                     "<Name>InternetGatewayDevice.ManagementServer.ParameterKey</Name>"\
