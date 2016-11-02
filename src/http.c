@@ -473,6 +473,7 @@ int duts_inform_build (void)
     int len;
     char serial[32] = {0};
     char *inform_msg;
+    extern int force_periodic;
     
     /* init a multi stack */
     multi_handle = curl_multi_init();
@@ -485,19 +486,26 @@ int duts_inform_build (void)
         snprintf (serial, sizeof(serial), DUT_SERIALNUM, cwmp->deviceid.serial_number, nd->idx);
 
         inform_msg = NULL;
-        list_for_each(p, &cwmp->events)
+        if (1 == force_periodic)
         {
-            event = list_entry (p, struct event, list);
-
-            if (event->code == EVENT_BOOTSTRAP || event->code == EVENT_BOOT)
-            {
-                inform_msg = CWMP_INFORM_BOOT_HARD;
-            }
-            else if (event->code == EVENT_PERIODIC)
-            {
                 inform_msg = CWMP_INFORM_PERIODIC_HARD;
+        }
+        else
+        {
+            list_for_each(p, &cwmp->events)
+            {
+                event = list_entry (p, struct event, list);
+    
+                if (event->code == EVENT_BOOTSTRAP || event->code == EVENT_BOOT)
+                {
+                    inform_msg = CWMP_INFORM_BOOT_HARD;
+                }
+                else if (event->code == EVENT_PERIODIC)
+                {
+                    inform_msg = CWMP_INFORM_PERIODIC_HARD;
+                }
             }
-	}
+        }
         
         if (NULL == inform_msg)
         {

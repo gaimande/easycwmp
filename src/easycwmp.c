@@ -41,6 +41,8 @@ static struct uloop_fd netlink_event = { .cb = netlink_new_msg };
 static struct uloop_timeout reload_timer = { .cb = easycwmp_do_reload };
 static struct uloop_timeout notify_timer = { .cb = easycwmp_do_notify };
 
+int force_periodic = 0;
+
 struct option long_opts[] = {
 	{"foreground", no_argument, NULL, 'f'},
 	{"help", no_argument, NULL, 'h'},
@@ -48,6 +50,7 @@ struct option long_opts[] = {
 	{"boot", no_argument, NULL, 'b'},
 	{"getrpcmethod", no_argument, NULL, 'g'},
         {"dutcount", required_argument, NULL, 'd'},
+        {"forceperiodic", no_argument, NULL, 'p'},
 	{NULL, 0, NULL, 0}
 };
 
@@ -57,6 +60,7 @@ static void print_help(void)
 	printf(" -f, --foreground        Run in the foreground\n");
 	printf(" -b, --boot              Run with \"1 BOOT\" event\n");
 	printf(" -g, --getrpcmethod      Run with \"2 PERIODIC\" event and with ACS GetRPCMethods\n");
+        printf(" -p, --force-periodic    Force to send periodically inform message\n");
         printf(" -d, --dutcount          Specify the quantity of DUTs\n");
 	printf(" -h, --help              Display this help text\n");
 	printf(" -v, --version           Display the %s version\n", NAME);
@@ -253,7 +257,7 @@ int main (int argc, char **argv)
 	bool foreground = false;
 
 	while (1) {
-		c = getopt_long(argc, argv, "fhbgvd:", long_opts, NULL);
+		c = getopt_long(argc, argv, "fhbgvpd:", long_opts, NULL);
 		if (c == EOF)
 			break;
 		switch (c) {
@@ -266,9 +270,11 @@ int main (int argc, char **argv)
 			case 'g':
 				start_event |= START_GET_RPC_METHOD;
 				break;
-
                         case 'd':
                                 dut_cnt = atoi(optarg);
+                                break;
+                        case 'p':
+                                force_periodic = 1;
                                 break;
                                 
 			case 'h':
