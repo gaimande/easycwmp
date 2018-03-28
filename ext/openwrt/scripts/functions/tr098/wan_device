@@ -73,8 +73,9 @@ wan_device_browse_instances_wancxdev() {
 #######################################
 
 wan_device_get_interface_maps() {
+	local iface=`$UCI_GET easycwmp.@local[0].interface`
 	#should return a list like this: "<interface1>:<instance1>:<protocol>:<default interface? 1 : 0> <interface2>:<instance>:<protocol>:<default interface? 1 : 0>"
-	echo "mng:1:IP:1 wan:2:PPP:0"
+	echo "$iface:1:IP:1 wan:2:PPP:0"
 }
 
 wan_device_get_ipcx_status() {
@@ -83,14 +84,15 @@ wan_device_get_ipcx_status() {
 
 wan_device_get_ipcx_ipaddr() {
 	local val iface="$1"
-	network_get_ipaddr val "$iface"
+	#network_get_ipaddr val "$iface"
+    val=`/sbin/ip -o -4 addr list $iface | awk '{print $4}' | cut -d/ -f1`
 	echo "$val"
 }
 
 wan_device_get_ipcx_macaddr() {
 	local val iface="$1"
 	if [ -z "$default_wan_device_mng_interface_mac" ]; then
-		val=`$UCI_GET network.$iface.macaddr`
+		val=`cat /sys/class/net/$iface/address`
 	else
 		val=$default_wan_device_mng_interface_mac
 	fi

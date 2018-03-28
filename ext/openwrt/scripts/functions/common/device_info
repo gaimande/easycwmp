@@ -18,6 +18,7 @@ entry_execute_method_root_DeviceInfo() {
 	case "$1" in ""|"$DMROOT."|"$DMROOT.DeviceInfo."*)
 		common_execute_method_obj "$DMROOT.DeviceInfo." "0"
 		common_execute_method_param "$DMROOT.DeviceInfo.SpecVersion" "0" "echo 1.0" "" "" "1"
+		common_execute_method_param "$DMROOT.DeviceInfo.ModelName" "0" "echo H660W" "" "" "1"
 		common_execute_method_param "$DMROOT.DeviceInfo.ProvisioningCode" "1" "$UCI_GET easycwmp.@local[0].provisioning_code" "device_info_set_provisioningcode" "" "1"
 		common_execute_method_param "$DMROOT.DeviceInfo.Manufacturer" "0" "$UCI_GET easycwmp.@device[0].manufacturer" "" "" "1"
 		common_execute_method_param "$DMROOT.DeviceInfo.ManufacturerOUI" "0" "$UCI_GET easycwmp.@device[0].oui" "" "" "1"
@@ -30,6 +31,8 @@ entry_execute_method_root_DeviceInfo() {
 		common_execute_method_obj "$DMROOT.DeviceInfo.MemoryStatus." "0"
 		common_execute_method_param "$DMROOT.DeviceInfo.MemoryStatus.Total" "0" "device_info_get_total_memory"
 		common_execute_method_param "$DMROOT.DeviceInfo.MemoryStatus.Free" "0" "device_info_get_free_memory"
+		common_execute_method_obj "$DMROOT.DeviceInfo.ProcessStatus." "0"
+		common_execute_method_param "$DMROOT.DeviceInfo.ProcessStatus.CPUUsage" "0" "device_info_get_cpu_usage"
 		return 0;
 		;;
 	esac
@@ -46,6 +49,10 @@ device_info_get_total_memory() {
 
 device_info_get_free_memory() {
 		cut -d: -f 2 /proc/meminfo | head -n 2| tail -n 1 | tr -d " kKbB" 
+}
+
+device_info_get_cpu_usage() {
+    uptime | awk -F'average: ' '{ print $2 }' | awk -F',' '{ print $1 }' | awk -F'.' '{ print $2 }' | awk '{print gensub(/^0*/,"","")}'
 }
 
 device_info_set_provisioningcode() {
