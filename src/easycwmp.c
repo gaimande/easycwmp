@@ -45,6 +45,8 @@ static struct uloop_fd netlink_event = { .cb = netlink_new_msg };
 static struct uloop_timeout reload_timer = { .cb = easycwmp_do_reload };
 static struct uloop_timeout notify_timer = { .cb = easycwmp_do_notify };
 
+int glb_idx = 0;
+
 struct option long_opts[] = {
 	{"foreground", no_argument, NULL, 'f'},
 	{"help", no_argument, NULL, 'h'},
@@ -246,8 +248,10 @@ int main (int argc, char **argv)
 	int start_event = 0;
 	bool foreground = false;
 
+	log_message(NAME, L_NOTICE, "QUYENLV %s-%d | Hello World\n", __func__, __LINE__);
+
 	while (1) {
-		c = getopt_long(argc, argv, "fhbgv", long_opts, NULL);
+		c = getopt_long(argc, argv, "fhbgvi:", long_opts, NULL);
 		if (c == EOF)
 			break;
 		switch (c) {
@@ -266,25 +270,32 @@ int main (int argc, char **argv)
 			case 'v':
 				print_version();
 				exit(EXIT_SUCCESS);
+            case 'i':
+                glb_idx = atoi(optarg);
+                break;
 			default:
 				print_help();
 				exit(EXIT_FAILURE);
 		}
 	}
+
+#if 0
 	int fd = open("/var/run/easycwmp.pid", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if(fd == -1)
 		exit(EXIT_FAILURE);
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1)
 		exit(EXIT_SUCCESS);
 	fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
-
+#endif
 	setlocale(LC_CTYPE, "");
 	umask(0037);
 
+#if 0
 	if (getuid() != 0) {
 		D("run %s as root\n", NAME);
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	/* run early cwmp initialization */
 	cwmp = calloc(1, sizeof(struct cwmp_internal));
@@ -346,6 +357,8 @@ int main (int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
+
+#if 0
 	char *buf = NULL;
 	asprintf(&buf, "%d", getpid());
 	int error = write(fd, buf, strlen(buf));
@@ -354,6 +367,7 @@ int main (int argc, char **argv)
 	}
 
 	free(buf);
+#endif
 
 	log_message(NAME, L_NOTICE, "entering main loop\n");
 	uloop_run();
@@ -368,7 +382,9 @@ int main (int argc, char **argv)
 	free(cwmp);
 
 	closelog();
+#if 0
 	close(fd);
+#endif
 	if (cwmp->netlink_sock[0] != -1) close(cwmp->netlink_sock[0]);
 	if (cwmp->netlink_sock[1] != -1) close(cwmp->netlink_sock[1]);
 

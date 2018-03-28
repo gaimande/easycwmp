@@ -22,7 +22,7 @@
 #include "http.h"
 #include "xml.h"
 #include "backup.h"
-#include "time.h" 
+#include "time.h"
 #include "log.h"
 
 struct event_code event_code_array[] = {
@@ -317,7 +317,7 @@ int cwmp_inform(void)
 		}
 		cwmp->hold_requests = false;
 	} while (cwmp->get_rpc_methods || backup_check_transfer_complete());
-	
+
 	http_client_exit();
 	xml_exit();
 	cwmp_handle_end_session();
@@ -463,7 +463,12 @@ void cwmp_download_launch(struct uloop_timeout *timeout)
 		code = xml_get_index_fault(fault);
 		goto end_fault ;
 	}
+    if (!status)
+    {
+        log_message(NAME, L_NOTICE, "No status response\n");
+    }
 	if(!status || status[0] == '\0') {
+        log_message(NAME, L_NOTICE, "No status informatioin response\n");
 		code = FAULT_9002;
 		goto end_fault;
 	}
@@ -474,10 +479,12 @@ void cwmp_download_launch(struct uloop_timeout *timeout)
 	external_fetch_method_resp_status(&status, &fault);
 
 	if (fault && fault[0]=='9') {
+        log_message(NAME, L_NOTICE, "QUYENV %s-%d\n", __func__, __LINE__);
 		code = xml_get_index_fault(fault);
 		goto end_fault;
 	}
 	if (!status || status[0] == '\0') {
+        log_message(NAME, L_NOTICE, "QUYENV %s-%d\n", __func__, __LINE__);
 		code = FAULT_9002;
 		goto end_fault;
 	}

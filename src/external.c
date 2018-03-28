@@ -185,6 +185,11 @@ static void external_add_json_obj(json_object *json_obj_out, char *object, char 
 
 int external_init()
 {
+    char script[128] = {0};
+    extern int glb_idx;
+
+    sprintf (script, "/tmp/easycwmp/%04d/easycwmp.sh", glb_idx);
+
 	log_message(NAME, L_NOTICE, "external script init\n");
 	if (pipe(pfds_out) < 0)
 			return -1;
@@ -206,8 +211,8 @@ int external_init()
 		close(pfds_in[0]);
 
 		int i=0;
-		const char *argv[4];
-		argv[i++] = fc_script;
+		char *argv[4];
+		argv[i++] = script;
 		argv[i++] = "--json-input";
 		argv[i++] = NULL;
 

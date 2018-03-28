@@ -21,7 +21,7 @@ UCI_REVERT="/sbin/uci -q ${UCI_CONFIG_DIR:+-c $UCI_CONFIG_DIR} revert"
 UCI_CHANGES="/sbin/uci -q ${UCI_CONFIG_DIR:+-c $UCI_CONFIG_DIR} changes"
 UCI_BATCH="/sbin/uci -q ${UCI_CONFIG_DIR:+-c $UCI_CONFIG_DIR} batch"
 
-DOWNLOAD_DIR="/tmp/easycwmp_download"
+DOWNLOAD_FILE="/tmp/easycwmp_download"
 EASYCWMP_PROMPT="easycwmp>"
 set_fault_tmp_file="/tmp/.easycwmp_set_fault_tmp"
 apply_service_tmp_file="/tmp/.easycwmp_apply_service"
@@ -83,7 +83,7 @@ __arg1=""; __arg2=""; __arg3=""; __arg4=""; __arg5="";
 
 json_get_opt() {
 	__arg1=""; __arg2=""; __arg3=""; __arg4=""; __arg5="";
-	
+
 	json_init
 	json_load "$1"
 	local command class
@@ -140,7 +140,7 @@ json_get_opt() {
 		exit)
 			exit 0
 			;;
-	esac	
+	esac
 }
 
 case "$1" in
@@ -220,7 +220,7 @@ handle_action() {
 		fi
 		return
 	fi
-	
+
 	if [ "$action" = "get_name" ]; then
 		[ "`echo $__arg2 | awk '{print tolower($0)}'`" = "false" ] &&  __arg2="0"
 		[ "`echo $__arg2 | awk '{print tolower($0)}'`" = "true" ] &&  __arg2="1"
@@ -235,7 +235,7 @@ handle_action() {
 		fi
 		return
 	fi
-	
+
 	if [ "$action" = "get_notification" ]; then
 		(common_entry_get_notification "$__arg1")
 		local fault="$?"
@@ -244,7 +244,7 @@ handle_action() {
 		fi
 		return
 	fi
-	
+
 	if [ "$action" = "set_value" ]; then
 		(common_entry_set_value "$__arg1" "$__arg2")
 		local fault="$?"
@@ -253,7 +253,7 @@ handle_action() {
 		fi
 		return
 	fi
-	
+
 	if [ "$action" = "set_notification" ]; then
 		(common_entry_set_notification "$__arg1" "$__arg2")
 		local fault="$?"
@@ -262,23 +262,21 @@ handle_action() {
 		fi
 		return
 	fi
-	
+
 	if [ "$action" = "download" ]; then
-# TODO: check firmaware size with falsh to be improved  
+# TODO: check firmaware size with falsh to be improved
 		dl_size=`df  |grep  "/tmp$" | awk '{print $4;}'`
 		[ -n "$dl_size" ] && dl_size_byte=$((${dl_size}*1024))
 		if [ -n "$dl_size" -a "$dl_size_byte" -lt "$__arg3" ]; then
 			let fault_code=9000+$E_DOWNLOAD_FAILURE
 			common_json_output_fault "" "$fault_code"
-		else 
-			rm -rf $DOWNLOAD_DIR 2> /dev/null
-			mkdir -p $DOWNLOAD_DIR
+		else
+			rm -f $DOWNLOAD_FILE 2> /dev/null
 			local dw_url="$__arg1"
 			[ "$__arg4" != "" -o "$__arg5" != "" ] && dw_url=`echo "$__arg1" | sed -e "s@://@://$__arg4:$__arg5\@@g"`
-			wget -P $DOWNLOAD_DIR "$dw_url"
+			wget -O $DOWNLOAD_FILE "$dw_url"
 			fault_code="$?"
 			if [ "$fault_code" != "0" ]; then
-				rm -rf $DOWNLOAD_DIR 2> /dev/null
 				let fault_code=9000+$E_DOWNLOAD_FAILURE
 				common_json_output_fault "" "$fault_code"
 			else
@@ -288,69 +286,32 @@ handle_action() {
 		return
 	fi
 	if [ "$action" = "apply_download" ]; then
-		if [ "$__arg1" = "3 Vendor Configuration File" ]; then 
-			dwfile=`ls $DOWNLOAD_DIR`
-			if [ "$dwfile" != "" ]; then
-				dwfile="$DOWNLOAD_DIR/$dwfile"
-				if [ ${dwfile%.gz} != $dwfile ]; then
-					tar -zxf $dwfile -C $DOWNLOAD_DIR >/dev/null 2>&1
-					fault_code="$?"
-					if [ "$fault_code" = "0" ]; then
-						if [ -d $ $DOWNLOAD_DIR/config/ ]; then
-							cp -R $DOWNLOAD_DIR/config/* /etc/config/
-						else
-							cp -R $DOWNLOAD_DIR/* /
-						fi
-					fi
-				elif [ ${dwfile%.bz2} != $dwfile ]; then
-					tar -jxf $dwfile -C $DOWNLOAD_DIR >/dev/null 2>&1
-					fault_code="$?"
-					if [ "$fault_code" = "0" ]; then
-						if [ -d $ $DOWNLOAD_DIR/config/ ]; then
-							cp -R $DOWNLOAD_DIR/config/* /etc/config/
-						else
-							cp -R $DOWNLOAD_DIR/* /
-						fi
-					fi
-				else
-					/sbin/uci import < $dwfile
-					fault_code="$?"
-				fi
+		if [ "$__arg1" = "3 Vendor Configuration File" ]; then
+			/sbin/uci import < $DOWNLOAD_FILE
+			fault_code="$?"
 			if [ "$fault_code" != "0" ]; then
-					let fault_code=$E_DOWNLOAD_FAILURE+9000
+				let fault_code=$E_DOWNLOAD_FAIL_FILE_CORRUPTED+9000
 				common_json_output_fault "" "$fault_code"
 			else
 				$UCI_COMMIT
 				sync
 				reboot
 				common_json_output_status "1"
-				fi
-			else
-				let fault_code=$E_DOWNLOAD_FAILURE+9000
-				common_json_output_fault "" "$fault_code"
 			fi
 		elif [ "$__arg1" = "1 Firmware Upgrade Image" ]; then
 			local gr_backup=`grep "^/etc/easycwmp/\.backup\.xml" /etc/sysupgrade.conf`
 			[ -z $gr_backup ] && echo "/etc/easycwmp/.backup.xml" >> /etc/sysupgrade.conf
-			dwfile=`ls $DOWNLOAD_DIR`
-			if [ "$dwfile" != "" ]; then
-				dwfile="$DOWNLOAD_DIR/$dwfile"
-				/sbin/sysupgrade $dwfile
+			/sbin/sysupgrade $DOWNLOAD_FILE
 			fault_code="$?"
 			if [ "$fault_code" != "0" ]; then
 				let fault_code=$E_DOWNLOAD_FAIL_FILE_CORRUPTED+9000
 				common_json_output_fault "" "$fault_code"
 			else
 				common_json_output_status "1"
-				fi
-			else
-				let fault_code=$E_DOWNLOAD_FAILURE+9000
-				common_json_output_fault "" "$fault_code"
 			fi
 		else
 			common_json_output_fault "" "$(($E_INVALID_ARGUMENTS+9000))"
 		fi
-		rm -rf $DOWNLOAD_DIR 2> /dev/null
 		return
 	fi
 	if [ "$action" = "factory_reset" ]; then
@@ -362,12 +323,12 @@ handle_action() {
 		sync
 		reboot
 	fi
-	
+
 	if [ "$action" = "reboot" ]; then
 		sync
 		reboot
 	fi
-	
+
 	if [ "$action" = "apply_notification" -o "$action" = "apply_value" ]; then
 		if [ ! -f "$set_fault_tmp_file" ]; then
 			local rev=""
@@ -416,7 +377,7 @@ handle_action() {
 				$UCI_COMMIT
 			fi
 		else
-			cat "$set_fault_tmp_file" 
+			cat "$set_fault_tmp_file"
 		fi
 		rm -f "$set_fault_tmp_file"
 		rm -f "$set_command_tmp_file"
@@ -459,7 +420,7 @@ handle_action() {
 		(common_entry_inform)
 		return
 	fi
-	
+
 	if [ "$action" = "inform_device_id" ]; then
 		common_get_inform_deviceid
 		return
@@ -481,7 +442,7 @@ handle_action() {
 		(common_entry_update_value_change)
 		return
 	fi
-	
+
 	if [ "$action" = "json_input" ]; then
 		echo "$EASYCWMP_PROMPT"
 		while read CMD; do

@@ -13,10 +13,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <microxml.h> 
+#include <microxml.h>
 #include <time.h>
 #include "cwmp.h"
-#include "backup.h" 
+#include "backup.h"
 #include "config.h"
 #include "log.h"
 
@@ -86,13 +86,13 @@ static int config_init_local(void)
 					DD("easycwmp.@local[0].ubus_socket=%s\n", config->local->ubus_socket);
 					continue;
 				}
-				
+
 				if (!strcmp((uci_to_option(e1))->e.name, "logging_level")) {
 					char *c;
-					int log_level = atoi((uci_to_option(e1))->v.string);					 
+					int log_level = atoi((uci_to_option(e1))->v.string);
 					asprintf(&c, "%d", log_level);
-					if (!strcmp(c, uci_to_option(e1)->v.string)) 
-						config->local->logging_level = log_level;						
+					if (!strcmp(c, uci_to_option(e1)->v.string))
+						config->local->logging_level = log_level;
 					free(c);
 					DD("easycwmp.@local[0].logging_level=%d\n", config->local->logging_level);
 					continue;
@@ -294,8 +294,13 @@ void config_exit(void)
 
 void config_load(void)
 {
+    char config_f[128] = {0};
+    extern int glb_idx;
 
-	uci_easycwmp = config_init_package("easycwmp");
+    sprintf (config_f, "/tmp/easycwmp/%04d/easycwmp", glb_idx);
+	log_message(NAME, L_NOTICE, "QUYENLV %s-%d | Load config from %s\n", __func__, __LINE__, config_f);
+	uci_easycwmp = config_init_package(config_f);
+
 
 	if (!uci_easycwmp) goto error;
 	if (config_init_local()) goto error;
@@ -312,7 +317,7 @@ void config_load(void)
 
 error:
 	log_message(NAME, L_CRIT, "configuration (re)loading failed, exit daemon\n");
-	D("configuration (re)loading failed\n"); 
+	D("configuration (re)loading failed\n");
 	exit(EXIT_FAILURE);
 }
 
