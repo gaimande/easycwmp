@@ -298,7 +298,6 @@ void config_load(void)
     extern int glb_idx;
 
     sprintf (config_f, "/tmp/easycwmp/%04d/easycwmp", glb_idx);
-	log_message(NAME, L_NOTICE, "QUYENLV %s-%d | Load config from %s\n", __func__, __LINE__, config_f);
 	uci_easycwmp = config_init_package(config_f);
 
 

@@ -248,8 +248,6 @@ int main (int argc, char **argv)
 	int start_event = 0;
 	bool foreground = false;
 
-	log_message(NAME, L_NOTICE, "QUYENLV %s-%d | Hello World\n", __func__, __LINE__);
-
 	while (1) {
 		c = getopt_long(argc, argv, "fhbgvi:", long_opts, NULL);
 		if (c == EOF)
